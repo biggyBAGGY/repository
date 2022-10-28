@@ -1,0 +1,237 @@
+import java.util.Scanner;
+public class Question1b{
+
+    List list = new List();//the doubly linked list
+   public static void main(String args[]) {
+        Question1b question1b = new Question1b();//create instance of program
+        question1b.makeList();//runs program
+    }//end of main method
+    
+    
+    void makeList(){
+        
+        Scanner input = new Scanner(System.in);
+        int choice;//the user's menu choice
+        
+        //printing menu screen
+        System.out.println("Welcome to Question1b");
+        System.out.println("This uses two queues to simulate a stack");
+        System.out.println("====================");
+        
+        //this loop contains and runs program function until user quits
+        while (true) {
+            
+            printMenu();//prints the user menu
+            
+            try {//tests if user entered an int
+                choice = input.nextInt();
+                input.nextLine();
+            
+                switch(choice) {//switch handles option chosen by user
+                case 1:
+                    list.push();//sends to add() method for adding to list
+                    break;
+                
+                case 2:
+                    list.dequeue();//dequeues from head of list
+                    break;
+                    
+                case 3:
+                    list.print();//prints the list to screen
+                    break;
+                    
+                case 4:
+                    System.exit(0);//exits program
+                    break;
+                    
+                case 5:
+                    System.out.println("List size: " + list.getLength());
+                
+                default://when an int outside of 1-6 is chosen
+                    menuError();
+                }//end of switch
+            }//end of try
+            catch (Exception e) {
+                menuError();//prints when improper menu choice entered
+            }//end of catch
+        }//end while which runs program
+        
+    }//end makeList()
+    
+    //menuError prints warning when an improper menu choice is made
+    void menuError() {
+        System.out.println("That is not a valid choice");
+        System.out.println("Choose a number between 1 - 4");
+        System.out.println();
+    }//end method menuError()
+    
+    void printMenu() {
+        //prints menu and options
+        System.out.println();
+        System.out.println("Please choose from the following options");
+        System.out.println();
+        System.out.println("(1) PUSH an integer to the list");
+        System.out.println("(2) POP an integer from the list");
+        System.out.println("(3) PRINT the list to screen");
+        System.out.println("(4) QUIT the program");
+        System.out.println("(5) List size");
+        System.out.println();
+        System.out.print("Enter command: ");
+    }//end printMenu() method
+         
+}//end of public class Question1b
+
+import java.util.Scanner;
+//This class is the doubly linked list
+class List
+{
+    //length of item in the list
+    private int length;
+    
+    //dummy node for the dlinked list. nothing sent to constructor as contains no data
+    Node dummy;
+
+    //Constructor for objects of class List
+    List()
+    {
+        this.length = 0;//initial length is zero as no data yet added to the list
+        this.dummy = new Node();
+        this.dummy.next = dummy;
+        this.dummy.prev = dummy;
+    }
+ 
+    //adding items to the list
+    void push() {
+        int data;//the integer the user wishes to add
+        Scanner input = new Scanner(System.in);//for catching user's input of position and data
+        
+        //loop requests data to add
+        do {
+            System.out.print("Enter an integer to add: ");
+            try{
+                data = input.nextInt();//get int the user adds for the position
+                input.nextLine();
+                break;
+            } catch (Exception e){
+                System.out.println("That is not a valid integer");
+                System.out.println();
+            }//end catch
+            
+        }while (true);//determines if desired position is valid or at end of list
+            
+        Node newNode = new Node (data);//new node to be added
+        
+        //determines if nothing in list, if so, makes this item the first in the list
+        if (length == 0) {
+            enqueue(newNode);
+        } else {
+            //second queue to move items to from first queue/list
+            List temporaryList = new List();
+            
+            //the node being moved from queue 1 to queue 2
+            Node movingNode = new Node();
+            movingNode = dummy.prev;//sets to first added item to enqueue to new queue
+
+            //this for cycles through list, enqueueing everything to new queue
+            for (int counter = 1; counter <= length; counter++) {
+                temporaryList.enqueue(movingNode);//moves it to new list
+                movingNode = movingNode.prev;//cycles to next item to move
+            }//end for which creates second queue
+            
+            //empties the first queue, making room to add newNode to the head of queue
+            int firstQueueLength = length;
+            for (int counter = 1; counter <= firstQueueLength; counter++) {
+                dequeue();
+            }//end for which creates second queue
+            
+            //enqueues new item to head of queue
+            enqueue(newNode);
+            
+            //this moves everything back to the first queue
+            movingNode = temporaryList.dummy.prev;//head of queue #2, 
+            for (int counter = 1; counter <= temporaryList.length; counter++){
+                enqueue(movingNode);
+                movingNode = movingNode.prev;
+            }//end for which moves everything back to the first queue
+
+        }//end else which handles push(x) when at least one item already in list
+        System.out.println(data + " has been added to the list");
+        System.out.println();
+        print();//prints the list with 
+        System.out.println();
+    }//end add()
+    
+    //enqueues item to last position in the list
+    void enqueue(Node newNode) {
+        //sets points of most recently added node
+        newNode.next = dummy.next;
+        newNode.prev = dummy;
+        
+        //resets the pointers of dummy and formerly last node to point to last node
+        dummy.next.prev = newNode;
+        dummy.next = newNode;
+        length++;
+    }//end enqueue()
+    
+    void dequeue() {//removes a node from the list
+        
+        //checks if list is empty, if so, informs user and aborts
+        if(length == 0) {
+            System.out.println("Cannot dequeue. List is already empty");
+        }else {//the else handles when there is an item in the list; dequeues
+            dummy.prev.prev.next = dummy;//reassigns pointer of node in 2nd place
+            dummy.prev = dummy.prev.prev;//reassigns prev pointer of the dummy
+            length--;
+        }//end else where the first in item is dequeued
+    }//end remove()
+    
+    void print() {//prints the list
+            if (length == 0) {//when the list contains no data
+                System.out.println("Cannot print. The list is empty");
+            } else {//when the list has data
+                Node tempNode = new Node();//for the upcoming for loop
+                tempNode = dummy.next;//starts at head of list (NOT the dummy)
+                
+                System.out.println("LIST:");
+                System.out.println("========");
+                
+                //prints each data in the node starting with position 1
+                for(int counter = 1; counter <= length; counter++){
+                    System.out.print(tempNode.getData() + " ");//prints node's data plus a space
+                    tempNode = tempNode.next;
+                }
+            }//end else for printing contents of the list
+            
+    }//end print()
+    
+    int getLength() {
+        return length;
+    }
+}//end class List
+
+/**
+Class Node makes and acts on the nodes of the list
+ */
+class Node{
+    private int data;//the data (in integer form) contained in each node
+    Node next;//next node in the list
+    Node prev;//previous node in the list
+
+    //Constructor for objects of class node
+    Node(int data)//the data the node initially contains
+    {
+     this.data = data;
+    }//end of constructor for node
+    
+    Node() {//for temporary node, they only exist to be set to other (already existing) nodes
+        //empty constructor data
+    }//end Node() constructor
+    
+    public void setData(int newData){//sets the data in the node
+        data = newData;
+    }//end setData()
+    
+    public int getData(){//returns data contained in node
+        return data;
+    }//end getData()
+}//end class Node
